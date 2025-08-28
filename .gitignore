@@ -1,0 +1,95 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment Variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/client_monitoring.db
+
+# Logs
+logs/
+*.log
+log/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Flask
+instance/
+.webassets-cache
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Secrets and Keys
+*.key
+*.pem
+*.crt
+config/*_secrets.json
+config/production_config.json
+
+# Temporary Files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Node modules (if any frontend dependencies)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# MCP Server specific
+mcp_server.pid
+dashboard.pid
+monitoring_cache/
+
+# Alert configurations with credentials
+config/alert_credentials.json

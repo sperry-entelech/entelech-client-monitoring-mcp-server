@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entelech Client Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .status-healthy { @apply bg-green-100 text-green-800 border-green-200; }
+        .status-degraded { @apply bg-yellow-100 text-yellow-800 border-yellow-200; }
+        .status-down { @apply bg-red-100 text-red-800 border-red-200; }
+        .status-unknown { @apply bg-gray-100 text-gray-800 border-gray-200; }
+        .metric-card { @apply bg-white rounded-lg shadow-md p-6 border-l-4; }
+        .metric-good { @apply border-green-500; }
+        .metric-warning { @apply border-yellow-500; }
+        .metric-critical { @apply border-red-500; }
+        .refresh-pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-chart-line text-blue-600"></i>
+                        Entelech Client Monitoring
+                    </h1>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Live Dashboard
+                    </span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                        Last updated: <span id="lastUpdated">Loading...</span>
+                    </div>
+                    <button onclick="refreshDashboard()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-sync-alt mr-2" id="refreshIcon"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Loading State -->
+        <div id="loading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-lg text-gray-600">Loading dashboard data...</span>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="hidden">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Total Clients -->
+                <div class="metric-card metric-good">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-users text-2xl text-green-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Total Clients</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="totalClients">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health -->
+                <div class="metric-card" id="systemHealthCard">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-heartbeat text-2xl" id="healthIcon"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">System Health</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="systemHealth">100%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Automations -->
+                <div class="metric-card metric-good">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-robot text-2xl text-blue-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Today's Automations</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="todayAutomations">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Rate -->
+                <div class="metric-card" id="successRateCard">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-2xl" id="successIcon"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Success Rate</p>
+                            <p class="text-2xl font-semibold text-gray-900" id="successRate">0%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- System Status Chart -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Client System Status</h3>
+                    <div class="relative h-64">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Performance Trends -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Automation Trends (30 Days)</h3>
+                    <div class="relative h-64">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Status Table -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Client Systems Overview</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Systems</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Check</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Alerts Section -->
+            <div class="mt-8 bg-white rounded-lg shadow-md overflow-hidden" id="alertsSection">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Alerts</h3>
+                </div>
+                <div id="alertsContainer" class="p-6">
+                    <p class="text-gray-500">No recent alerts</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let dashboardData = null;
+        let statusChart = null;
+        let trendsChart = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboardData, 30000);
+        });
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/summary');
+                dashboardData = await response.json();
+                
+                if (dashboardData.error) {
+                    showError(dashboardData.error);
+                    return;
+                }
+
+                updateSummaryCards();
+                updateChartsAndTables();
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+                
+            } catch (error) {
+                showError('Failed to load dashboard data: ' + error.message);
+            }
+        }
+
+        function updateSummaryCards() {
+            const summary = dashboardData.summary;
+            
+            // Update summary cards
+            document.getElementById('totalClients').textContent = summary.total_clients;
+            document.getElementById('todayAutomations').textContent = summary.today_automations.toLocaleString();
+            
+            // Calculate and update system health percentage
+            const totalSystems = summary.healthy_systems + summary.degraded_systems + summary.down_systems;
+            const healthPercentage = totalSystems > 0 ? 
+                Math.round((summary.healthy_systems / totalSystems) * 100) : 100;
+            
+            document.getElementById('systemHealth').textContent = healthPercentage + '%';
+            updateHealthCard(healthPercentage);
+            
+            // Update success rate
+            document.getElementById('successRate').textContent = 
+                summary.today_success_rate ? summary.today_success_rate.toFixed(1) + '%' : '0%';
+            updateSuccessRateCard(summary.today_success_rate || 0);
+            
+            // Update last updated time
+            document.getElementById('lastUpdated').textContent = 
+                new Date(dashboardData.last_updated).toLocaleTimeString();
+        }
+
+        function updateHealthCard(percentage) {
+            const card = document.getElementById('systemHealthCard');
+            const icon = document.getElementById('healthIcon');
+            
+            card.className = 'metric-card ';
+            if (percentage >= 95) {
+                card.className += 'metric-good';
+                icon.className = 'fas fa-heartbeat text-2xl text-green-600';
+            } else if (percentage >= 80) {
+                card.className += 'metric-warning';
+                icon.className = 'fas fa-exclamation-triangle text-2xl text-yellow-600';
+            } else {
+                card.className += 'metric-critical';
+                icon.className = 'fas fa-heart-broken text-2xl text-red-600';
+            }
+        }
+
+        function updateSuccessRateCard(rate) {
+            const card = document.getElementById('successRateCard');
+            const icon = document.getElementById('successIcon');
+            
+            card.className = 'metric-card ';
+            if (rate >= 95) {
+                card.className += 'metric-good';
+                icon.className = 'fas fa-check-circle text-2xl text-green-600';
+            } else if (rate >= 80) {
+                card.className += 'metric-warning';
+                icon.className = 'fas fa-exclamation-circle text-2xl text-yellow-600';
+            } else {
+                card.className += 'metric-critical';
+                icon.className = 'fas fa-times-circle text-2xl text-red-600';
+            }
+        }
+
+        async function updateChartsAndTables() {
+            // Update status chart
+            updateStatusChart();
+            
+            // Load and update trends chart
+            try {
+                const trendsResponse = await fetch('/api/system/trends?days=30');
+                const trendsData = await trendsResponse.json();
+                updateTrendsChart(trendsData);
+            } catch (error) {
+                console.error('Failed to load trends data:', error);
+            }
+            
+            // Update clients table
+            updateClientsTable();
+        }
+
+        function updateStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            const summary = dashboardData.summary;
+            
+            if (statusChart) {
+                statusChart.destroy();
+            }
+            
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Healthy', 'Degraded', 'Down'],
+                    datasets: [{
+                        data: [summary.healthy_systems, summary.degraded_systems, summary.down_systems],
+                        backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTrendsChart(trendsData) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+            
+            if (!trendsData.automation_trends || trendsData.automation_trends.length === 0) {
+                // Show placeholder for no data
+                ctx.fillStyle = '#9CA3AF';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('No trend data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+            
+            const labels = trendsData.automation_trends.map(item => {
+                return new Date(item.date).toLocaleDateString();
+            });
+            const automationCounts = trendsData.automation_trends.map(item => item.automations);
+            const successRates = trendsData.automation_trends.map(item => item.success_rate);
+            
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Automations',
+                        data: automationCounts,
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Success Rate (%)',
+                        data: successRates,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Automations'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Success Rate (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateClientsTable() {
+            const tableBody = document.getElementById('clientsTable');
+            const clientHealth = dashboardData.client_health;
+            
+            if (Object.keys(clientHealth).length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No client data available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const rows = Object.entries(clientHealth).map(([clientId, data]) => {
+                const statusBadge = getStatusBadge(data.overall_status);
+                const systemsCount = data.systems.length;
+                const healthySystems = data.systems.filter(s => s.status === 'healthy').length;
+                const lastCheck = new Date(data.last_check).toLocaleString();
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${clientId}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${healthySystems}/${systemsCount} healthy</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">${lastCheck}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <button onclick="viewClientDetail('${clientId}')" 
+                                    class="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableBody.innerHTML = rows.join('');
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'healthy': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-healthy">Healthy</span>',
+                'degraded': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-degraded">Degraded</span>',
+                'down': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-down">Down</span>',
+                'unknown': '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium status-unknown">Unknown</span>'
+            };
+            return badges[status] || badges['unknown'];
+        }
+
+        function viewClientDetail(clientId) {
+            window.location.href = `/client/${clientId}`;
+        }
+
+        function refreshDashboard() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('refresh-pulse');
+            
+            loadDashboardData().finally(() => {
+                refreshIcon.classList.remove('refresh-pulse');
+            });
+        }
+
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Error Loading Dashboard</h3>
+                    <p class="text-gray-600 mb-4">${message}</p>
+                    <button onclick="location.reload()" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        <i class="fas fa-redo mr-2"></i>
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+# Entelech Client Monitoring MCP Server - Python Dependencies
+
+# MCP Framework
+mcp>=1.0.0
+
+# Web Framework for Dashboard
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Async HTTP Client
+aiohttp==3.9.1
+asyncio
+
+# Database
+sqlite3  # Built-in with Python
+
+# Data Processing
+pandas==2.1.4
+numpy==1.25.2
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# Configuration Management
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# Logging and Monitoring
+structlog==23.2.0
+
+# HTTP Requests (for testing endpoints)
+requests==2.31.0
+urllib3==2.0.7
+
+# JSON Processing
+jsonschema==4.19.2
+
+# Email Notifications (optional)
+smtplib  # Built-in with Python
+email-validator==2.1.0
+
+# Encryption and Security
+cryptography==41.0.8
+
+# Process Management
+psutil==5.9.6
+
+# File System Operations
+pathlib  # Built-in with Python
+watchdog==3.0.0
+
+# Development and Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Type Hints
+typing-extensions==4.8.0
+
+# CLI Interface
+click==8.1.7
+rich==13.6.0
+
+# Prometheus Metrics (optional)
+prometheus-client==0.19.0
+
+# Schedule Tasks
+schedule==1.2.0
+
+# Data Validation
+pydantic==2.5.1
+
+# Time Zone Support
+pytz==2023.3.post1
+
+# UUID Generation
+uuid  # Built-in with Python
+
+# Base64 Encoding
+base64  # Built-in with Python
+
+# Regular Expressions
+re  # Built-in with Python
+
+# System Information
+platform  # Built-in with Python
+sys  # Built-in with Python
+os  # Built-in with Python
+
+# Threading Support
+threading  # Built-in with Python
+concurrent.futures  # Built-in with Python
+
+# Subprocess Management
+subprocess  # Built-in with Python
+
+# Signal Handling
+signal  # Built-in with Python
+
+# Socket Operations
+socket  # Built-in with Python
+
+# Time Operations
+time  # Built-in with Python
+
+# Math Operations
+math  # Built-in with Python
+statistics  # Built-in with Python
+
+# Collections
+collections  # Built-in with Python
+
+# Itertools
+itertools  # Built-in with Python
+
+# Functools
+functools  # Built-in with Python
+
+# Contextlib
+contextlib  # Built-in with Python
+
+# Warning Management
+warnings  # Built-in with Python

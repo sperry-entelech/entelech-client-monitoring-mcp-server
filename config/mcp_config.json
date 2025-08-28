@@ -1,0 +1,106 @@
+{
+  "server_config": {
+    "name": "entelech-monitoring",
+    "version": "1.0.0",
+    "description": "MCP server for monitoring client automation systems",
+    "author": "Entelech",
+    "license": "MIT"
+  },
+  "database": {
+    "path": "../database/client_monitoring.db",
+    "backup_interval_hours": 24,
+    "retention_days": 365,
+    "auto_cleanup": true
+  },
+  "monitoring": {
+    "health_check_interval_minutes": 15,
+    "performance_metrics_interval_minutes": 60,
+    "alert_check_interval_minutes": 5,
+    "timeout_seconds": 30,
+    "max_retries": 3
+  },
+  "alerts": {
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "smtp_username": "",
+      "smtp_password": "",
+      "from_address": "",
+      "default_recipients": []
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#monitoring",
+      "username": "Entelech Monitor"
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "",
+      "timeout_seconds": 10,
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  },
+  "dashboard": {
+    "enabled": true,
+    "host": "0.0.0.0",
+    "port": 5000,
+    "debug": false,
+    "cors_enabled": true,
+    "auto_refresh_seconds": 30
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file_enabled": true,
+    "file_path": "logs/monitoring.log",
+    "max_size_mb": 50,
+    "backup_count": 5
+  },
+  "client_defaults": {
+    "health_check_endpoints": ["/health", "/status", "/ping"],
+    "metrics_endpoints": ["/metrics", "/stats", "/performance"],
+    "expected_response_codes": [200, 201],
+    "max_response_time_ms": 5000,
+    "min_uptime_percentage": 95.0
+  },
+  "performance_thresholds": {
+    "success_rate_warning": 95.0,
+    "success_rate_critical": 80.0,
+    "response_time_warning": 1000,
+    "response_time_critical": 5000,
+    "uptime_warning": 98.0,
+    "uptime_critical": 95.0
+  },
+  "security": {
+    "api_key_required": false,
+    "api_key": "",
+    "rate_limiting": {
+      "enabled": false,
+      "requests_per_minute": 100
+    },
+    "cors_origins": ["*"],
+    "ssl_enabled": false,
+    "ssl_cert_path": "",
+    "ssl_key_path": ""
+  },
+  "integrations": {
+    "datadog": {
+      "enabled": false,
+      "api_key": "",
+      "app_key": ""
+    },
+    "new_relic": {
+      "enabled": false,
+      "license_key": ""
+    },
+    "prometheus": {
+      "enabled": false,
+      "metrics_endpoint": "/prometheus/metrics",
+      "port": 8080
+    }
+  }
+}
